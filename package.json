@@ -1,0 +1,15 @@
+{
+  "name": "cinelocal",
+  "version": "1.0.0",
+  "description": "CineLocal — A Netflix-inspired local streaming web app powered by TMDB",
+  "main": "index.html",
+  "scripts": {
+    "dev": "live-server --port=3000 --no-browser"
+  },
+  "keywords": ["streaming", "tmdb", "movies"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "live-server": "^1.2.2"
+  }
+}

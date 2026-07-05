@@ -1,0 +1,14 @@
+# Dependencies
+node_modules/
+
+# Environment / Secrets
+.env
+.env.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
