@@ -12,3 +12,9 @@ Thumbs.db
 # IDE
 .vscode/
 .idea/
+
+# Build and deployment
+dist/
+.vercel/
+.env.*
+!.env.example

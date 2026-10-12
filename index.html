@@ -1,267 +1,97 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="CineLocal — Discover and stream popular movies with a sleek, dark-mode Netflix-inspired interface powered by TMDB." />
-  <meta name="theme-color" content="#0a0a0f" />
-  <title>CineLocal — Stream Movies Locally</title>
-  <link rel="shortcut icon" href="favicon.png?v=2" type="image/x-icon" />
-  <link rel="icon" type="image/png" href="favicon.png?v=2" />
-
-  <!-- Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
-
-  <!-- Styles -->
-  <link rel="stylesheet" href="css/styles.css" />
-</head>
-<body>
-
-  <!-- ========== NAVBAR ========== -->
-  <nav class="navbar" id="navbar">
-    <div class="navbar__inner">
-      <a href="/" class="navbar__brand" id="nav-brand">
-        <span class="navbar__logo-icon">▶</span>
-        <span class="navbar__logo-text">Cine<span class="accent">Local</span></span>
-      </a>
-
-      <div class="navbar__search" id="nav-search">
-        <svg class="navbar__search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="11" cy="11" r="8"></circle>
-          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-        </svg>
-        <input
-          type="text"
-          id="search-input"
-          class="navbar__search-input"
-          placeholder="Search movies..."
-          autocomplete="off"
-          spellcheck="false"
-        />
-        <button class="navbar__search-clear hidden" id="search-clear" aria-label="Clear search">&times;</button>
-      </div>
-
-      <div class="navbar__actions">
-        <button class="navbar__btn" id="nav-home-btn" aria-label="Home">
-          <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
-        </button>
-      </div>
-    </div>
-  </nav>
-
-  <!-- ========== HERO BANNER ========== -->
-  <section class="hero" id="hero">
-    <div class="hero__backdrop" id="hero-backdrop"></div>
-    <div class="hero__gradient"></div>
-    <div class="hero__content" id="hero-content">
-      <span class="hero__badge" id="hero-badge">⭐ Featured</span>
-      <h1 class="hero__title" id="hero-title">Loading...</h1>
-      <p class="hero__overview" id="hero-overview"></p>
-      <div class="hero__meta" id="hero-meta"></div>
-      <div class="hero__actions">
-        <button class="btn btn--play" id="hero-play-btn" data-tmdb-id="">
-          <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22"><path d="M8 5v14l11-7z"/></svg>
-          Play Now
-        </button>
-        <button class="btn btn--info" id="hero-info-btn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
-          More Info
-        </button>
-      </div>
-    </div>
-  </section>
-
-  <!-- ========== MOVIE SECTIONS ========== -->
-  <main class="content" id="content">
-
-    <!-- Search Results (hidden by default) -->
-    <section class="movie-section hidden" id="search-results-section">
-      <div class="movie-section__header">
-        <h2 class="movie-section__title">🔍 Search Results</h2>
-        <span class="movie-section__count" id="search-results-count"></span>
-      </div>
-      <div class="movie-grid" id="search-results-grid"></div>
-    </section>
-
-    <!-- Continue Watching -->
-    <section class="movie-section hidden" id="history-section">
-      <div class="movie-section__header">
-        <h2 class="movie-section__title">🍿 Continue Watching</h2>
-      </div>
-      <div class="movie-row" id="history-row"></div>
-    </section>
-
-    <!-- Watchlist -->
-    <section class="movie-section hidden" id="watchlist-section">
-      <div class="movie-section__header">
-        <h2 class="movie-section__title">➕ My Watchlist</h2>
-      </div>
-      <div class="movie-row" id="watchlist-row"></div>
-    </section>
-
-    <!-- Popular Movies -->
-    <section class="movie-section" id="popular-section">
-      <div class="movie-section__header">
-        <h2 class="movie-section__title">🔥 Popular Right Now</h2>
-      </div>
-      <div class="movie-row" id="popular-row"></div>
-    </section>
-
-    <!-- Trending Movies -->
-    <section class="movie-section" id="trending-section">
-      <div class="movie-section__header">
-        <h2 class="movie-section__title">📈 Trending This Week</h2>
-      </div>
-      <div class="movie-row" id="trending-row"></div>
-    </section>
-
-    <!-- Top Rated -->
-    <section class="movie-section" id="top-rated-section">
-      <div class="movie-section__header">
-        <h2 class="movie-section__title">🏆 Top Rated</h2>
-      </div>
-      <div class="movie-row" id="top-rated-row"></div>
-    </section>
-
-    <!-- Popular Web Series -->
-    <section class="movie-section" id="popular-tv-section">
-      <div class="movie-section__header">
-        <h2 class="movie-section__title">📺 Popular Web Series</h2>
-      </div>
-      <div class="movie-row" id="popular-tv-row"></div>
-    </section>
-
-    <!-- Trending Shows -->
-    <section class="movie-section" id="trending-tv-section">
-      <div class="movie-section__header">
-        <h2 class="movie-section__title">🔥 Trending Shows</h2>
-      </div>
-      <div class="movie-row" id="trending-tv-row"></div>
-    </section>
-
-    <!-- Load More (for search) -->
-    <div class="load-more hidden" id="load-more">
-      <button class="btn btn--outline" id="load-more-btn">Load More</button>
-    </div>
-  </main>
-
-  <!-- ========== NETFLIX-STYLE DETAILS & STREAMING MODAL ========== -->
-  <div class="player-overlay hidden" id="player-overlay">
-    <div class="player-modal" id="player-modal">
-      
-      <!-- 1. DETAILS VIEW STATE -->
-      <div id="modal-details-view" class="player-modal__details-view">
-        <button class="player-modal__close-btn" id="player-close" aria-label="Close modal">&times;</button>
-        
-        <!-- Backdrop banner -->
-        <div class="player-modal__backdrop" id="modal-backdrop">
-          <div class="player-modal__backdrop-gradient"></div>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#101210" />
+    <meta
+      name="description"
+      content="Your world of cinema. Discover movies and series, build your watchlist, and make every night a movie night with CineLocal."
+    />
+    <title>CineLocal — Your personal cinema</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="preconnect" href="https://image.tmdb.org" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;450;500;550;600;650;700&family=Manrope:wght@400;500;600;650;700;750;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/css/styles.css" />
+    <script type="module" src="/js/app.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main" data-action="skip-content"
+      >Skip to content</a
+    >
+    <aside id="sidebar" class="sidebar" aria-label="Main navigation"></aside>
+    <div class="workspace">
+      <header class="topbar" id="topbar"></header>
+      <main id="main" tabindex="-1">
+        <div class="initial-loading">
+          <span class="loading-orbit"></span>
+          <p>Setting the scene…</p>
         </div>
-
-        <div class="player-modal__content">
-          <div class="player-modal__info-row">
-            <!-- Poster -->
-            <div class="player-modal__poster-wrapper">
-              <img id="modal-poster" src="" alt="Movie Poster" class="player-modal__poster" />
-            </div>
-            
-            <!-- Info and Play Button -->
-            <div class="player-modal__info">
-              <h2 class="player-modal__movie-title" id="player-title">Movie Title</h2>
-              <div class="player-modal__meta" id="modal-meta">
-                <span class="player-modal__meta-item" id="modal-rating">⭐ --</span>
-                <span class="player-modal__meta-item" id="modal-year">📅 --</span>
-              </div>
-              <p class="player-modal__overview" id="modal-overview">Overview text here...</p>
-              
-              <!-- Play and Watchlist Buttons -->
-              <div class="player-modal__action-bar">
-                <button class="btn btn--play btn--play-large" id="modal-play-btn">
-                  <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M8 5v14l11-7z"/></svg>
-                  Play Movie
-                </button>
-                <button class="btn btn--outline btn--watchlist" id="modal-watchlist-btn">
-                  ➕ My Watchlist
-                </button>
-              </div>
-
-              <!-- TV controls (Season select & episode list/grid) -->
-              <div class="player-modal__tv-controls hidden" id="modal-tv-controls">
-                <div class="tv-controls__header">
-                  <span class="tv-controls__title">Episodes</span>
-                  <div class="tv-controls__select-wrapper">
-                    <select id="season-select" class="season-select-dropdown">
-                      <!-- Seasons populated dynamically -->
-                    </select>
-                  </div>
-                </div>
-                <div class="episode-grid" id="episode-grid">
-                  <!-- Episodes list populated dynamically -->
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 2. INLINE PLAYER VIEW STATE -->
-      <div id="modal-player-view" class="player-modal__player-view hidden">
-        <div class="player-modal__player-header">
-          <div class="player-modal__player-header-left">
-            <button class="player-modal__back-btn" id="player-back-btn" aria-label="Back to details">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-              Details
-            </button>
-            <span class="player-modal__player-title" id="player-movie-name">Movie Name</span>
-          </div>
-          
-          <div class="player-modal__player-header-right">
-            <!-- Server Switch dropdown wrapper -->
-            <div class="player-modal__switch-wrapper" id="player-switch-wrapper">
-              <button class="player-modal__switch-btn" id="player-switch-btn">
-                🔄 Switch Server (Server 1)
-              </button>
-              <div class="player-modal__server-dropdown hidden" id="player-server-dropdown">
-                <!-- Dropdown items will be dynamically generated here -->
-              </div>
-            </div>
-            
-            <!-- Sandbox toggle button -->
-            <button class="player-modal__sandbox-btn player-modal__sandbox-btn--off" id="player-sandbox-btn">
-              🔓 Ad-Block: OFF (No Ads Blocked)
-            </button>
-            <button class="player-modal__player-close-btn" id="player-player-close" aria-label="Close player">&times;</button>
-          </div>
-        </div>
-        
-        <!-- Player iframe viewport -->
-        <div class="player-modal__viewport-inline">
-          <iframe
-            id="player-iframe"
-            class="player-modal__iframe-inline"
-            src=""
-            width="100%"
-            height="100%"
-            style="border: none;"
-            allowfullscreen="true"
-            scrolling="no"
-            allow="autoplay; encrypted-media; fullscreen"
-          ></iframe>
-        </div>
-      </div>
-
+      </main>
+      <footer class="footer">
+        <span
+          >CINELOCAL <span class="footer-dot">•</span> A little escape. A great
+          story.</span
+        ><span
+          >Metadata by
+          <a
+            href="https://www.themoviedb.org"
+            target="_blank"
+            rel="noopener noreferrer"
+            >TMDB</a
+          ><span class="footer-dot">/</span> Not endorsed or certified by
+          TMDB.</span
+        >
+      </footer>
     </div>
-  </div>
-
-  <!-- ========== TOAST CONTAINER ========== -->
-  <div class="toast-container" id="toast-container"></div>
-
-  <!-- ========== SCRIPTS ========== -->
-  <script src="js/config.js"></script>
-  <script src="js/api.js"></script>
-  <script src="js/ui.js"></script>
-  <script src="js/app.js"></script>
-</body>
+    <dialog
+      id="details-dialog"
+      class="details-dialog"
+      aria-label="Title details"
+    ></dialog>
+    <dialog
+      id="watch-dialog"
+      class="watch-dialog"
+      aria-label="Video player"
+    ></dialog>
+    <dialog
+      id="shortcuts-dialog"
+      class="shortcuts-dialog"
+      aria-labelledby="shortcut-title"
+    ></dialog>
+    <div
+      id="toasts"
+      class="toasts"
+      role="status"
+      aria-live="polite"
+      aria-atomic="false"
+    ></div>
+    <input
+      id="backup-input"
+      type="file"
+      accept="application/json,.json"
+      hidden
+    />
+    <input
+      id="video-input"
+      type="file"
+      accept="video/*,.mkv,.webm,.mp4,.mov"
+      hidden
+    />
+    <input id="subtitle-input" type="file" accept=".vtt,.srt" hidden />
+    <noscript
+      ><p class="noscript">
+        CineLocal needs JavaScript enabled to browse your cinema.
+      </p></noscript
+    >
+  </body>
 </html>
