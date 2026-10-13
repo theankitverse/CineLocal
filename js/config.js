@@ -52,8 +52,8 @@ export const PROVIDERS = [
     name: "VidFast",
     badge: "Alternative sources",
     note: "Use the source selector and audio/subtitle controls inside this player. Hindi audio is only available when the selected source supplies it.",
-    movie: "https://vidfast.vc/movie/{id}?autoPlay=false&theme=c5ec88",
-    tv: "https://vidfast.vc/tv/{id}/{season}/{episode}?autoPlay=false&theme=c5ec88",
+    movie: "https://vidfast.vc/movie/{id}?autoPlay=false&theme=b799ff",
+    tv: "https://vidfast.vc/tv/{id}/{season}/{episode}?autoPlay=false&theme=b799ff",
   },
 ];
 export const GENRES = {

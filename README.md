@@ -42,6 +42,7 @@ If the key is missing or the upstream service is unavailable, the app identifies
 - Local video player with native playback/seek/volume controls, speed, picture-in-picture where supported, fullscreen, SRT/WebVTT subtitles, sleep timer and saved position for reopened files.
 - Profile name, compact browsing, hide-completed discovery, reduced motion and keyboard shortcuts.
 - Versioned JSON library export/import with validation and confirmation before replacement.
+- Purple cinema theme with a compact phone homepage, collapsible search, and smaller featured artwork.
 - Phone-first layout with safe-area-aware bottom navigation, two-column browsing, swipeable shelves, full-screen title/player views, and larger touch controls. Desktop keeps its sidebar layout. Native modal focus handling and keyboard support.
 
 ## Audio and added providers
@@ -54,6 +55,8 @@ These are third-party sources, not guaranteed Hindi catalogs. Audio tracks depen
 ## Playback boundaries
 
 CineLocal supplies catalog and library controls. Third-party players control their own stream quality, seeking, volume, subtitles and audio tracks. Provider availability and title availability are external dependencies. The parent app cannot inspect a cross-origin player's playback time, so recent streaming history records title and episode selections, not a fabricated percentage or timestamp. There is no automatic stream health check or automatic next-episode playback for embeds.
+
+The player has large **Fullscreen** and **Open server** actions below the video. Fullscreen uses a full-viewport fallback when native fullscreen is unavailable, with a persistent **Back to controls** button. Audio and restriction settings are grouped in an expandable panel; changing a preference keeps that panel open.
 
 The local player has full HTML video controls. Codec support depends on the browser. Reopening the same filename/size/modified-date restores its last position. Files are never uploaded. Local playback positions stay on this browser and are not included in the catalog-library backup. Sleep timers can be delayed if the browser or device is suspended.
 

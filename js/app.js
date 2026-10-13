@@ -101,7 +101,7 @@ function renderShell() {
   $("#sidebar").innerHTML =
     `<a class="brand" href="#home" aria-label="CineLocal home"><img src="/favicon.svg" alt=""><span>Cine<span class="brand-light">Local</span></span></a><p class="brand-tag">Your personal cinema</p><nav><p class="nav-label">EXPLORE</p>${nav("home", "For you", "home")}${nav("discover", "Discover", "compass")}${nav("movies", "Movies", "film")}${nav("series", "TV series", "tv")}<p class="nav-label">YOUR SPACE</p>${nav("watchlist", "Watchlist", "bookmark", true)}${nav("history", "Recently watched", "history")}${nav("watched", "Completed", "check")}${nav("local", "Local player", "folder")}</nav><div class="nav-bottom"><div class="personal-card">${icon("spark")}<h3>Your next great watch.</h3><p>Let a little serendipity pick<br>tonight’s story.</p><button data-action="surprise">Surprise me ${icon("arrow")}</button></div>${nav("settings", "Settings", "settings")}<button class="nav-item" data-action="shortcuts" title="Keyboard shortcuts">${icon("grid")}<span>Keyboard shortcuts</span></button><div class="sidebar-foot"><span class="status-dot"></span> MADE FOR YOUR MOVIE NIGHTS</div></div>`;
   $("#topbar").innerHTML =
-    `<a class="mobile-brand" href="#home" aria-label="CineLocal home"><img src="/favicon.svg" alt=""><span>CineLocal</span></a><button class="icon-button mobile-menu" data-action="menu" aria-label="Toggle navigation" aria-expanded="false">${icon("menu")}</button><div class="top-tabs"><button class="top-tab" data-action="navigate" data-route="home">Discover</button><button class="top-tab" data-action="navigate" data-route="movies">Movies</button><button class="top-tab" data-action="navigate" data-route="series">TV series</button></div><form class="search-box" id="search-form" role="search">${icon("search")}<input id="search-input" type="search" placeholder="Search movies, series, and more" aria-label="Search movies and series" autocomplete="off"><button class="search-clear hidden" type="button" data-action="clear-search" aria-label="Clear search">${icon("close")}</button><kbd>/</kbd></form><div class="top-actions"><button class="icon-button" data-action="surprise" title="Surprise me" aria-label="Pick a random title">${icon("shuffle")}</button><button class="avatar" data-action="navigate" data-route="settings" aria-label="Profile settings">A</button></div>`;
+    `<a class="mobile-brand" href="#home" aria-label="CineLocal home"><img src="/favicon.svg" alt=""><span>CineLocal</span></a><button class="icon-button mobile-search-toggle" data-action="toggle-search" aria-label="Open search" aria-expanded="false">${icon("search")}</button><button class="icon-button mobile-menu" data-action="menu" aria-label="Toggle navigation" aria-expanded="false">${icon("menu")}</button><div class="top-tabs"><button class="top-tab" data-action="navigate" data-route="home">Discover</button><button class="top-tab" data-action="navigate" data-route="movies">Movies</button><button class="top-tab" data-action="navigate" data-route="series">TV series</button></div><form class="search-box" id="search-form" role="search">${icon("search")}<input id="search-input" type="search" placeholder="Movies, shows, and more" aria-label="Search movies and series" autocomplete="off"><button class="search-clear hidden" type="button" data-action="clear-search" aria-label="Clear search">${icon("close")}</button><kbd>/</kbd></form><div class="top-actions"><button class="icon-button" data-action="surprise" title="Surprise me" aria-label="Pick a random title">${icon("shuffle")}</button><button class="avatar" data-action="navigate" data-route="settings" aria-label="Profile settings">A</button></div>`;
   $("#mobile-nav").innerHTML = [
     ["home", "Home", "home"],
     ["discover", "Explore", "compass"],
@@ -217,6 +217,7 @@ async function renderRoute() {
     ? name
     : "home";
   routeParams = new URLSearchParams(query);
+  document.body.dataset.route = route;
   updateNavigation();
   window.scrollTo({ top: 0, behavior: "instant" });
   document.title = `${{ home: "Your personal cinema", discover: "Discover", movies: "Movies", series: "TV series", watchlist: "Your watchlist", history: "Recently watched", watched: "Completed", settings: "Settings", local: "Local player", search: "Search" }[route]} — CineLocal`;
@@ -289,7 +290,7 @@ function heroMarkup() {
   const m = heroItems[heroIndex] || previewCatalog[0];
   media.set(mediaKey(m), m);
   const saved = store.has("watchlist", m);
-  return `<section class="hero" aria-label="Featured title"><img class="hero-image" data-fallback="${imageUrl(m.poster_path, "w780")}" src="${imageUrl(m.backdrop_path, "w1280")}" alt="" fetchpriority="high"><div class="hero-bottom-label">${icon("spark")} THE CINELOCAL SPOTLIGHT</div><div class="hero-content"><div class="hero-kicker">${icon("spark")} Tonight deserves a great story</div><h2>${esc(title(m))}</h2><p class="hero-tagline">${esc(genreNames(m) || "A story worth your time")}</p><div class="hero-meta"><span class="rating">${icon("star")}${rating(m)}</span><span>${year(m)}</span><span>${typeLabel(m)}</span><span class="quality-tag">${m.media_type === "tv" ? "SERIES" : "FEATURE FILM"}</span></div><p class="hero-description">${esc(m.overview || "Find your next favorite. Explore the story, save it for later, or settle in and press play.")}</p><div class="hero-actions"><button class="button primary" data-action="play" data-key="${mediaKey(m)}">${icon("play")} Watch now</button><button class="button" data-action="save" data-key="${mediaKey(m)}" aria-pressed="${saved}">${icon(saved ? "check" : "plus")}${saved ? "In watchlist" : "Watchlist"}</button><button class="button" data-action="details" data-key="${mediaKey(m)}">${icon("info")} Details</button></div></div><div class="hero-pagination"><span class="hero-index">0${heroIndex + 1} <span style="opacity:.45">/ 0${heroItems.length}</span></span>${heroItems.map((_, i) => `<button data-action="hero" data-index="${i}" class="${i === heroIndex ? "active" : ""}" aria-label="Show featured title ${i + 1}" aria-pressed="${i === heroIndex}"></button>`).join("")}</div></section>`;
+  return `<section class="hero" aria-label="Featured title"><img class="hero-image" data-fallback="${imageUrl(m.poster_path, "w780")}" src="${imageUrl(m.backdrop_path, "w1280")}" alt="" fetchpriority="high"><div class="hero-bottom-label">${icon("spark")} THE CINELOCAL SPOTLIGHT</div><div class="hero-content"><div class="hero-kicker">${icon("spark")} Tonight’s spotlight</div><h2>${esc(title(m))}</h2><p class="hero-tagline">${esc(genreNames(m) || "A story worth your time")}</p><div class="hero-meta"><span class="rating">${icon("star")}${rating(m)}</span><span>${year(m)}</span><span>${typeLabel(m)}</span><span class="quality-tag">${m.media_type === "tv" ? "SERIES" : "FEATURE FILM"}</span></div><p class="hero-description">${esc(m.overview || "Find your next favorite. Explore the story, save it for later, or settle in and press play.")}</p><div class="hero-actions"><button class="button primary" data-action="play" data-key="${mediaKey(m)}">${icon("play")} Watch now</button><button class="button" data-action="save" data-key="${mediaKey(m)}" aria-pressed="${saved}">${icon(saved ? "check" : "plus")}${saved ? "In watchlist" : "Watchlist"}</button><button class="button" data-action="details" data-key="${mediaKey(m)}">${icon("info")} Details</button></div></div><div class="hero-pagination"><span class="hero-index">0${heroIndex + 1} <span style="opacity:.45">/ 0${heroItems.length}</span></span>${heroItems.map((_, i) => `<button data-action="hero" data-index="${i}" class="${i === heroIndex ? "active" : ""}" aria-label="Show featured title ${i + 1}" aria-pressed="${i === heroIndex}"></button>`).join("")}</div></section>`;
 }
 function renderHome() {
   const s = store.get(),
@@ -310,12 +311,12 @@ function renderHome() {
         `<button class="genre-chip" data-action="genre" data-genre="${id}">${label}</button>`,
     )
     .join("")}</div>
- ${s.history.length ? row("Pick up where you left off", "YOUR RECENT STORIES", s.history.slice(0, 9), store, { id: "continue-row", landscape: true, more: "history", removeFrom: "history" }) : ""}
- ${row(d.fallback.includes("trending") ? "The conversation starters" : "Trending this week", d.fallback.includes("trending") ? "PREVIEW COLLECTION" : "WHAT’S CAPTURING EVERYONE", visible(d.sections.trending).slice(0, 12), store, { id: "trending-row", ranked: true, more: "discover" })}
+ ${s.history.length ? row("Continue watching", "YOUR RECENT STORIES", s.history.slice(0, 9), store, { id: "continue-row", landscape: true, more: "history", removeFrom: "history" }) : ""}
+ ${row(d.fallback.includes("trending") ? "The conversation starters" : "Trending now", d.fallback.includes("trending") ? "PREVIEW COLLECTION" : "WHAT’S CAPTURING EVERYONE", visible(d.sections.trending).slice(0, 12), store, { id: "trending-row", ranked: true, more: "discover" })}
  ${s.watchlist.length ? row("Saved for a good night", "YOUR WATCHLIST", s.watchlist.slice(0, 12), store, { id: "watchlist-row", more: "watchlist", count: s.watchlist.length }) : ""}
  <section class="feature-banner"><div><p class="eyebrow">LESS SCROLLING. MORE CINEMA.</p><h2>Can’t decide? Leave it to us.</h2><p>One unexpected pick. It might just become your next favorite.</p></div><button class="button primary" data-action="surprise">${icon("shuffle")} Find my next watch</button></section>
- ${row("Made for the big screen", d.fallback.includes("movies") ? "PREVIEW · MOVIES TO GET LOST IN" : "POPULAR MOVIES", visible(d.sections.movies).slice(0, 12), store, { id: "movies-row", more: "movies" })}
- ${row("Just one more episode", d.fallback.includes("series") ? "PREVIEW · SERIES WORTH YOUR TIME" : "POPULAR TV SERIES", visible(d.sections.series).slice(0, 12), store, { id: "series-row", more: "series" })}
+ ${row("Popular movies", d.fallback.includes("movies") ? "PREVIEW · MOVIES TO GET LOST IN" : "POPULAR MOVIES", visible(d.sections.movies).slice(0, 12), store, { id: "movies-row", more: "movies" })}
+ ${row("Binge-worthy series", d.fallback.includes("series") ? "PREVIEW · SERIES WORTH YOUR TIME" : "POPULAR TV SERIES", visible(d.sections.series).slice(0, 12), store, { id: "series-row", more: "series" })}
  ${row("Great stories stay with you", d.fallback.includes("rated") ? "PREVIEW · THE ESSENTIAL COLLECTION" : "TOP-RATED CINEMA", visible(d.sections.rated).slice(0, 12), store, { id: "rated-row", more: "discover" })}`;
 }
 let mobileFiltersOpen = false;
@@ -708,6 +709,19 @@ function closeDetails() {
   active = null;
   if (returnFocus?.isConnected) returnFocus.focus();
 }
+function expandedExit() {
+  return `<button class="expanded-exit" data-action="exit-expanded">${icon("back")} Back to controls</button>`;
+}
+async function exitExpanded() {
+  const stage = $(".watch-stage");
+  stage?.classList.remove("expanded");
+  if (document.fullscreenElement)
+    await document.exitFullscreen().catch(() => {});
+  try {
+    screen.orientation?.unlock?.();
+  } catch {}
+  $("[data-action=fullscreen]")?.focus();
+}
 function frameHTML(url, name) {
   const restricted = currentSettings().playerSandbox;
   return `<iframe src="${esc(url)}" title="${esc(name)}" allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin" ${restricted ? 'sandbox="allow-scripts allow-same-origin allow-forms allow-presentation"' : ""}></iframe>`;
@@ -720,11 +734,23 @@ async function startStream() {
   renderStream();
   if (!watchDialog.open) watchDialog.showModal();
 }
-function renderStream(serverId = currentSettings().defaultServer) {
+function renderStream(
+  serverId = currentSettings().defaultServer,
+  keepControls = false,
+) {
+  const optionsOpen = keepControls && $(".player-options")?.open;
+  const controlsScroll = watchDialog.scrollTop;
   const m = playerMedia;
   if (!m) return;
   const provider = PROVIDERS.find((p) => p.id === serverId) || PROVIDERS[0];
-  watchDialog.innerHTML = `<div class="watch-header"><div class="watch-heading"><h2>${esc(title(m))}</h2><p>${m.media_type === "tv" ? `Season ${m.season} · Episode ${m.episode} · ` : ""}${provider.name}</p></div><div class="watch-controls"><button class="icon-button" data-action="fullscreen" aria-label="Fullscreen player">${icon("expand")}</button><button class="icon-button" data-action="close-watch" aria-label="Close player">${icon("close")}</button></div></div><div class="watch-stage"><div class="stage-loading"><span class="loading-orbit"></span></div>${frameHTML(providerUrl(provider, m, m.season, m.episode, currentSettings().audioLanguage), `${title(m)} — ${provider.name}`)}</div><div class="watch-toolbar"><label class="sr-label" for="server-select">Server</label><select id="server-select" aria-label="Streaming server">${PROVIDERS.map((p) => `<option value="${p.id}" ${provider.id === p.id ? "selected" : ""}>${p.name}${p.badge ? ` · ${p.badge}` : ""}</option>`).join("")}</select><button class="button subtle" data-action="next-server">Try next server</button><button class="button subtle" data-action="reload-stream">Reload</button><button class="button subtle" data-action="toggle-sandbox" aria-pressed="${currentSettings().playerSandbox}">${icon("settings")} Restrictions ${currentSettings().playerSandbox ? "on" : "off"}</button><span class="spacer"></span>${m.media_type === "tv" ? `<div class="watch-episode-nav"><button class="button subtle" data-action="previous-episode" ${m.episode <= 1 ? "disabled" : ""}>${icon("back")} Previous</button><label>Season <input type="number" id="player-season" min="0" max="200" value="${m.season}" aria-label="Season number" style="width:50px;background:#222d1b;color:inherit;border:1px solid #3c4931;border-radius:5px;padding:5px"></label><label>Episode <input type="number" id="player-episode" min="1" max="2000" value="${m.episode}" aria-label="Episode number" style="width:55px;background:#222d1b;color:inherit;border:1px solid #3c4931;border-radius:5px;padding:5px"></label><button class="button subtle" data-action="go-episode">Go</button><button class="button subtle" data-action="next-episode">Next ${icon("arrow")}</button></div>` : ""}</div><section class="audio-guide" aria-label="Audio and language"><div><strong>${icon("volume")} Audio & languages</strong><p>${esc(provider.note || "Choose audio and subtitles inside this player. If Hindi is missing, try ScreenScape; available tracks depend on the title.")}</p></div>${
+  const streamURL = providerUrl(
+    provider,
+    m,
+    m.season,
+    m.episode,
+    currentSettings().audioLanguage,
+  );
+  watchDialog.innerHTML = `<div class="watch-header"><div class="watch-heading"><h2>${esc(title(m))}</h2><p>${m.media_type === "tv" ? `Season ${m.season} · Episode ${m.episode} · ` : ""}${provider.name}</p></div><div class="watch-controls"><button class="icon-button" data-action="fullscreen" aria-label="Fullscreen player">${icon("expand")}</button><button class="icon-button" data-action="close-watch" aria-label="Close player">${icon("close")}</button></div></div><div class="watch-stage"><div class="stage-loading"><span class="loading-orbit"></span></div>${frameHTML(streamURL, `${title(m)} — ${provider.name}`)}${expandedExit()}</div><div class="player-quick-actions"><button class="button primary" data-action="fullscreen">${icon("expand")} Fullscreen</button><a class="button subtle" href="${esc(streamURL)}" target="_blank" rel="noopener noreferrer">${icon("external")} Open server</a></div><p class="player-touch-tip">Tap the video to show playback controls. Turn your phone sideways for more room.</p><div class="watch-toolbar"><label class="sr-label" for="server-select">Server</label><select id="server-select" aria-label="Streaming server">${PROVIDERS.map((p) => `<option value="${p.id}" ${provider.id === p.id ? "selected" : ""}>${p.name}${p.badge ? ` · ${p.badge}` : ""}</option>`).join("")}</select><button class="button subtle" data-action="next-server">Try next server</button><button class="button subtle" data-action="reload-stream">Reload</button><span class="spacer"></span>${m.media_type === "tv" ? `<div class="watch-episode-nav"><button class="button subtle" data-action="previous-episode" ${m.episode <= 1 ? "disabled" : ""}>${icon("back")} Previous</button><label>Season <input type="number" id="player-season" min="0" max="200" value="${m.season}" aria-label="Season number" style="width:50px;background:#221b2d;color:inherit;border:1px solid #3b3149;border-radius:5px;padding:5px"></label><label>Episode <input type="number" id="player-episode" min="1" max="2000" value="${m.episode}" aria-label="Episode number" style="width:55px;background:#221b2d;color:inherit;border:1px solid #3b3149;border-radius:5px;padding:5px"></label><button class="button subtle" data-action="go-episode">Go</button><button class="button subtle" data-action="next-episode">Next ${icon("arrow")}</button></div>` : ""}</div><details class="player-options"><summary>${icon("volume")} Audio, subtitles & player settings ${icon("chevron")}</summary><section class="audio-guide" aria-label="Audio and language"><div><strong>${icon("volume")} Audio & languages</strong><p>${esc(provider.note || "Choose audio and subtitles inside this player. If Hindi is missing, try ScreenScape; available tracks depend on the title.")}</p></div>${
     provider.audioParam
       ? `<label>Preferred audio<select id="audio-language" aria-label="Preferred audio">${[
           ["auto", "Provider default"],
@@ -737,7 +763,9 @@ function renderStream(serverId = currentSettings().defaultServer) {
           )
           .join("")}</select></label>`
       : `<button class="button subtle" data-action="hindi-server">Try Hindi audio</button>`
-  }</section><p class="watch-note">Quality, audio tracks and subtitles are controlled by the provider. Hindi subtitles do not necessarily mean Hindi audio. Switching servers restarts playback; your selected episode stays saved.</p>`;
+  }</section><div class="player-options-footer"><button class="button subtle" data-action="toggle-sandbox" aria-pressed="${currentSettings().playerSandbox}">${icon("settings")} Restrictions ${currentSettings().playerSandbox ? "on" : "off"}</button><p>Audio and subtitle menus are inside the video. Use Fullscreen or Open server if those menus are cramped.</p></div></details><p class="watch-note">Quality, audio tracks and subtitles are controlled by the provider. Hindi subtitles do not necessarily mean Hindi audio. Switching servers restarts playback; your selected episode stays saved.</p>`;
+  if (optionsOpen) $(".player-options").open = true;
+  watchDialog.scrollTop = keepControls ? controlsScroll : 0;
   const frame = $(".watch-stage iframe");
   frame.addEventListener("load", () => $(".stage-loading")?.remove(), {
     once: true,
@@ -801,6 +829,7 @@ async function showTrailer() {
   watchDialog.showModal();
 }
 async function closeWatch() {
+  await exitExpanded();
   clearTimeout(sleepTimer);
   sleepTimer = null;
   const video = $("#local-video");
@@ -943,6 +972,11 @@ async function loadSubtitles(file) {
 }
 const actions = {
   "skip-content": () => main.focus(),
+  "toggle-search": () => {
+    const open = $("#topbar").classList.toggle("search-open");
+    $(".mobile-search-toggle").setAttribute("aria-expanded", String(open));
+    if (open) $("#search-input").focus();
+  },
   "toggle-filters": (el) => {
     mobileFiltersOpen = !mobileFiltersOpen;
     el.setAttribute("aria-expanded", String(mobileFiltersOpen));
@@ -1076,7 +1110,8 @@ const actions = {
   "reload-stream": () => renderStream($("#server-select").value),
   "toggle-sandbox": () => {
     store.settings({ playerSandbox: !currentSettings().playerSandbox });
-    renderStream($("#server-select").value);
+    renderStream($("#server-select").value, true);
+    $('[data-action="toggle-sandbox"]').focus({ preventScroll: true });
     toast(
       `Player restrictions ${currentSettings().playerSandbox ? "enabled" : "disabled"}.`,
     );
@@ -1088,15 +1123,25 @@ const actions = {
       Number($("#player-season").value),
       Number($("#player-episode").value),
     ),
+  "exit-expanded": exitExpanded,
   fullscreen: async () => {
     const stage = $(".watch-stage");
     if (!stage) return;
-    if (document.fullscreenElement) await document.exitFullscreen();
-    else if (stage.requestFullscreen) await stage.requestFullscreen();
-    else {
-      const v = $("#local-video");
-      if (v?.webkitEnterFullscreen) v.webkitEnterFullscreen();
-      else toast("Use the fullscreen control inside the player.");
+    if (document.fullscreenElement || stage.classList.contains("expanded"))
+      return exitExpanded();
+    if (!stage.querySelector(".expanded-exit"))
+      stage.insertAdjacentHTML("beforeend", expandedExit());
+    // Full viewport fallback also works when iOS rejects element fullscreen.
+    stage.classList.add("expanded");
+    stage.querySelector(".expanded-exit").focus();
+    if (stage.requestFullscreen) {
+      try {
+        await stage.requestFullscreen();
+        if (matchMedia("(pointer: coarse)").matches)
+          await screen.orientation?.lock?.("landscape").catch(() => {});
+      } catch {
+        /* Keep the full-viewport fallback. */
+      }
     }
   },
   pip: async () => {
@@ -1198,7 +1243,8 @@ document.addEventListener(
     if (el.id === "audio-language") {
       const server = $("#server-select").value;
       store.settings({ audioLanguage: el.value });
-      renderStream(server);
+      renderStream(server, true);
+      $("#audio-language").focus({ preventScroll: true });
     }
     if (el.id === "playback-speed" && $("#local-video"))
       $("#local-video").playbackRate = Number(el.value);
@@ -1289,6 +1335,8 @@ document.addEventListener(
       !$("#shortcuts-dialog").open
     ) {
       e.preventDefault();
+      $("#topbar").classList.add("search-open");
+      $(".mobile-search-toggle").setAttribute("aria-expanded", "true");
       $("#search-input").focus();
     }
     if (e.key === "?" && !watchDialog.open) {
@@ -1325,6 +1373,13 @@ document.addEventListener(
 for (const dialog of [detailDialog, watchDialog]) {
   dialog.addEventListener("cancel", (e) => {
     e.preventDefault();
+    if (
+      dialog === watchDialog &&
+      $(".watch-stage")?.classList.contains("expanded")
+    ) {
+      guard(exitExpanded)();
+      return;
+    }
     guard(dialog === watchDialog ? closeWatch : closeDetails)();
   });
   dialog.addEventListener("click", (e) => {
@@ -1409,3 +1464,12 @@ indexMedia([
 ]);
 if (store.getIssue()) toast(store.getIssue(), "error");
 guard(routeAndDeepLink)();
+
+document.addEventListener("fullscreenchange", () => {
+  if (!document.fullscreenElement) {
+    $(".watch-stage")?.classList.remove("expanded");
+    try {
+      screen.orientation?.unlock?.();
+    } catch {}
+  }
+});
