@@ -1,3 +1,4 @@
+import { PROVIDERS } from "./config.js";
 export const STORAGE_KEY = "cinelocal_v2";
 export const defaults = {
   name: "Ankit",
@@ -6,7 +7,9 @@ export const defaults = {
   hideWatched: false,
   reducedMotion: false,
   rememberEpisode: true,
-  playerSandbox: true,
+  playerSandbox: false,
+  playbackDefaultsVersion: 1,
+  audioLanguage: "auto",
   volume: 0.8,
 };
 export const mediaKey = (m) =>
@@ -56,17 +59,14 @@ export function sanitizeState(value) {
     if (typeof input[key] === typeof defaults[key]) settings[key] = input[key];
   settings.name = settings.name.slice(0, 30);
   settings.volume = Math.max(0, Math.min(1, settings.volume));
-  if (
-    ![
-      "vidlink",
-      "rivestream",
-      "vidsrc",
-      "vidsrcme",
-      "2embed",
-      "smashy",
-    ].includes(settings.defaultServer)
-  )
-    settings.defaultServer = "rivestream";
+  // One-time migration: old profiles inherited restrictions-on automatically.
+  // Once migrated, keep any subsequent explicit choice across reloads/imports.
+  if (input.playbackDefaultsVersion !== 1) settings.playerSandbox = false;
+  settings.playbackDefaultsVersion = 1;
+  if (!["auto", "hindi", "eng"].includes(settings.audioLanguage))
+    settings.audioLanguage = "auto";
+  if (!PROVIDERS.some((p) => p.id === settings.defaultServer))
+    settings.defaultServer = defaults.defaultServer;
   const ratings = {};
   for (const [key, rating] of Object.entries(value.ratings || {}))
     if (

@@ -236,22 +236,117 @@ test("catalog proxy reports missing credentials and rejects writes", async () =>
   }
 });
 
-test('catalog proxy retries a transient network error and caches only success', async () => {
+test("catalog proxy retries a transient network error and caches only success", async () => {
   const originalFetch = globalThis.fetch;
   const oldKey = process.env.TMDB_API_KEY;
-  process.env.TMDB_API_KEY = 'test-server-key';
+  process.env.TMDB_API_KEY = "test-server-key";
   let attempts = 0;
   globalThis.fetch = async (url) => {
-    assert.equal(url.searchParams.get('api_key'), 'test-server-key');
-    if (++attempts === 1) throw new Error('Temporary connection reset');
-    return { ok: true, status: 200, json: async () => ({ results: [{ id: 1 }] }) };
+    assert.equal(url.searchParams.get("api_key"), "test-server-key");
+    if (++attempts === 1) throw new Error("Temporary connection reset");
+    return {
+      ok: true,
+      status: 200,
+      json: async () => ({ results: [{ id: 1 }] }),
+    };
   };
-  const res = { headers: {}, setHeader(k, v) { this.headers[k] = v; }, status(code) { this.code = code; return this; }, json(data) { this.data = data; return this; } };
+  const res = {
+    headers: {},
+    setHeader(k, v) {
+      this.headers[k] = v;
+    },
+    status(code) {
+      this.code = code;
+      return this;
+    },
+    json(data) {
+      this.data = data;
+      return this;
+    },
+  };
   try {
-    await handler({ method: 'GET', url: '/api/tmdb?path=/movie/popular' }, res);
+    await handler({ method: "GET", url: "/api/tmdb?path=/movie/popular" }, res);
     assert.equal(attempts, 2);
     assert.equal(res.code, 200);
-    assert.match(res.headers['Cache-Control'], /s-maxage=300/);
-    assert.equal(JSON.stringify(res.data).includes('test-server-key'), false);
-  } finally { globalThis.fetch = originalFetch; if (oldKey) process.env.TMDB_API_KEY = oldKey; else delete process.env.TMDB_API_KEY; }
+    assert.match(res.headers["Cache-Control"], /s-maxage=300/);
+    assert.equal(JSON.stringify(res.data).includes("test-server-key"), false);
+  } finally {
+    globalThis.fetch = originalFetch;
+    if (oldKey) process.env.TMDB_API_KEY = oldKey;
+    else delete process.env.TMDB_API_KEY;
+  }
+});
+
+test("playback restrictions default off and old profiles migrate once without losing library", () => {
+  const storage = memory();
+  storage.setItem(
+    STORAGE_KEY,
+    JSON.stringify({
+      version: 2,
+      watchlist: [movie],
+      settings: { playerSandbox: true },
+    }),
+  );
+  const store = createStore(storage);
+  assert.equal(store.get().settings.playerSandbox, false);
+  assert.equal(store.get().watchlist[0].id, movie.id);
+  store.settings({ playerSandbox: true });
+  assert.equal(createStore(storage).get().settings.playerSandbox, true);
+  const restored = createStore(memory());
+  restored.import(store.get());
+  assert.equal(restored.get().settings.playerSandbox, true);
+  assert.equal(createStore(memory()).get().settings.playerSandbox, false);
+});
+
+test("every provider can be saved as the preferred server", () => {
+  const storage = memory();
+  for (const provider of PROVIDERS) {
+    const store = createStore(storage);
+    store.settings({ defaultServer: provider.id });
+    assert.equal(
+      createStore(storage).get().settings.defaultServer,
+      provider.id,
+    );
+  }
+});
+
+test("audio preferences use documented parameters only and retain episode selection", () => {
+  const p = PROVIDERS.find((p) => p.id === "screenscape");
+  const url = new URL(providerUrl(p, series, 0, 7, "hindi"));
+  assert.equal(url.searchParams.get("lan"), "hindi");
+  assert.equal(url.searchParams.get("s"), "0");
+  assert.equal(url.searchParams.get("e"), "7");
+  assert.equal(url.searchParams.get("tmdb"), String(series.id));
+  assert.equal(
+    new URL(providerUrl(p, movie, 1, 1, "auto")).searchParams.has("lan"),
+    false,
+  );
+  assert.equal(
+    new URL(providerUrl(p, movie, 1, 1, "invalid")).searchParams.has("lan"),
+    false,
+  );
+  assert.equal(
+    providerUrl(PROVIDERS[0], movie, 1, 1, "hindi"),
+    providerUrl(PROVIDERS[0], movie),
+  );
+  const store = createStore(memory());
+  store.settings({ audioLanguage: "hindi" });
+  assert.equal(store.get().settings.audioLanguage, "hindi");
+  store.settings({ audioLanguage: "invalid" });
+  assert.equal(store.get().settings.audioLanguage, "auto");
+});
+
+test("production CSP permits every configured player host without wildcard frame access", async () => {
+  const { readFile } = await import("node:fs/promises");
+  const config = JSON.parse(
+    await readFile(new URL("../vercel.json", import.meta.url), "utf8"),
+  );
+  const csp = config.headers[0].headers.find(
+    (h) => h.key === "Content-Security-Policy",
+  ).value;
+  const frames = csp.match(/frame-src ([^;]+)/)[1].split(" ");
+  assert.equal(frames.includes("*"), false);
+  for (const p of PROVIDERS)
+    for (const media of [movie, series])
+      assert.ok(frames.includes(new URL(providerUrl(p, media)).origin), p.id);
 });

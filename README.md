@@ -38,11 +38,18 @@ If the key is missing or the upstream service is unavailable, the app identifies
 - Watchlist, recent titles, completed collection, five-star personal ratings and library sorting.
 - Title details, cast, directors/creators, trailers and recommendations when provided by TMDB.
 - Season/episode selection, manual episode entry, previous/next navigation and remembered selections.
-- Six existing embedded provider choices; RiveStream is the default, with preferred-server settings, reload, fullscreen and configurable iframe restrictions.
+- Eight embedded provider choices, including ScreenScape and VidFast; RiveStream is the default, with preferred-server settings, reload, fullscreen and configurable iframe restrictions.
 - Local video player with native playback/seek/volume controls, speed, picture-in-picture where supported, fullscreen, SRT/WebVTT subtitles, sleep timer and saved position for reopened files.
 - Profile name, compact browsing, hide-completed discovery, reduced motion and keyboard shortcuts.
 - Versioned JSON library export/import with validation and confirmation before replacement.
-- Responsive desktop/mobile UI, native modal focus handling, accessible control names and keyboard support.
+- Phone-first layout with safe-area-aware bottom navigation, two-column browsing, swipeable shelves, full-screen title/player views, and larger touch controls. Desktop keeps its sidebar layout. Native modal focus handling and keyboard support.
+
+## Audio and added providers
+
+- [ScreenScape documentation](https://flix.screenscape.me/embed): movie/TV embeds with `lan=hindi` or `lan=eng`. The player offers a saved audio preference and a **Try Hindi audio** shortcut.
+- [VidFast documentation](https://vidfast.vc/): alternative movie/TV sources with in-player server, audio and subtitle controls.
+
+These are third-party sources, not guaranteed Hindi catalogs. Audio tracks depend on title, region and provider availability. The discovery **Original language** filter does not find dubbed copies. Switching servers restarts playback while preserving the selected season and episode. **Try next server** cycles through available providers.
 
 ## Playback boundaries
 
@@ -64,7 +71,7 @@ The old API key was present in the repository's Git history. Moving it server-si
 - Cache successful catalog responses; independent homepage section fallbacks.
 - Cancelled requests and request-version checks for search, detail and episode navigation.
 - Escaped rendered strings and validated imported media paths.
-- Sandboxed embed option is on by default and blocks popups/top navigation. Some providers require disabling restrictions, which reloads the iframe.
+- Embedded-player restrictions are off by default for provider compatibility. Existing profiles migrate to this default once; subsequent explicit choices persist. Turning restrictions on limits popups/top navigation and reloads the iframe.
 - Vercel security headers include CSP, frame protection and restricted browser permissions.
 - A public catalog proxy is not a quota guarantee. Configure Vercel rate limiting/access protection if public traffic warrants it.
 
