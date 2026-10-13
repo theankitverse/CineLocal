@@ -3174,3 +3174,137 @@ summary:focus-visible {
     font-size: 12px;
   }
 }
+
+/* Short, interruptible motion keeps navigation feeling like an app. */
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes panel-enter {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+@keyframes fade-enter {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.page-enter {
+  animation: page-enter 260ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.details-dialog[open],
+.shortcuts-dialog[open] {
+  animation: panel-enter 240ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.watch-dialog[open] {
+  animation: fade-enter 180ms ease-out;
+}
+dialog[open]::backdrop {
+  animation: fade-enter 180ms ease-out;
+}
+.button,
+.icon-button,
+.top-tab,
+.genre-chip,
+.mobile-nav-item,
+.nav-item,
+.card-open {
+  transition:
+    transform 150ms ease,
+    background-color 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease,
+    box-shadow 180ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.button:active:not(:disabled),
+.icon-button:active:not(:disabled),
+.top-tab:active,
+.genre-chip:active,
+.mobile-nav-item:active,
+.nav-item:active {
+  transform: scale(0.96);
+}
+.card-open:active {
+  transform: scale(0.98);
+}
+.button.primary:hover {
+  box-shadow: 0 4px 22px #b799ff25;
+}
+.hero-image {
+  animation: fade-enter 320ms ease-out;
+}
+.detail-tab-panel > *,
+.catalog-results > * {
+  animation: fade-enter 220ms ease-out;
+}
+.direct-link-form {
+  display: grid;
+  gap: 14px;
+  margin: 24px 0;
+  padding: 24px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+}
+.direct-link-form h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 17px;
+}
+.direct-link-form p,
+.direct-link-form small {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.direct-link-form label {
+  display: grid;
+  gap: 8px;
+  font-size: 13px;
+}
+.direct-link-form input {
+  width: 100%;
+  min-width: 0;
+  min-height: 48px;
+  padding: 12px;
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--bg);
+  font-size: 16px;
+}
+.direct-link-form .button {
+  justify-self: start;
+  min-height: 48px;
+}
+.player-options .direct-link-form {
+  margin: 0;
+  border: 0;
+  border-top: 1px solid var(--line);
+  border-radius: 0;
+}
+@media (max-width: 760px) {
+  .direct-link-form {
+    padding: 16px;
+  }
+  .direct-link-form .button {
+    width: 100%;
+  }
+}

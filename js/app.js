@@ -1,4 +1,5 @@
 import { request, details, season } from "./api.js";
+import { directVideoUrl } from "./playback.js";
 import { PROVIDERS, GENRES, providerUrl } from "./config.js";
 import { createStore, mediaKey, normalizeMedia } from "./store.js";
 import { previewCatalog } from "./demo.js";
@@ -46,7 +47,8 @@ let route = "home",
   page = 1,
   totalPages = 1,
   results = [],
-  loadingMore = false;
+  loadingMore = false,
+  routeExitAnimation = null;
 let active = null,
   detailController,
   seasonController,
@@ -201,6 +203,25 @@ async function renderRoute() {
   routeController?.abort();
   routeController = new AbortController();
   const version = ++routeVersion;
+  routeExitAnimation?.cancel();
+  const reduceMotion =
+    currentSettings().reducedMotion ||
+    matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (main.childElementCount && !reduceMotion && main.animate) {
+    const animation = main.animate(
+      [{ opacity: 1 }, { opacity: 0, transform: "translateY(-6px)" }],
+      { duration: 110, easing: "ease-in", fill: "forwards" },
+    );
+    routeExitAnimation = animation;
+    await animation.finished.catch(() => {});
+    animation.cancel();
+    if (version !== routeVersion) return;
+  }
+  main.classList.remove("page-enter");
+  if (!reduceMotion) {
+    void main.offsetWidth;
+    main.classList.add("page-enter");
+  }
   const [name, query = ""] = location.hash.slice(1).split("?");
   route = [
     "home",
@@ -558,8 +579,11 @@ function renderSettings() {
     `<label class="setting-row"><span><strong>${label}</strong><small>${help}</small></span><input type="checkbox" data-setting="${key}" ${s[key] ? "checked" : ""}></label>`;
   main.innerHTML = `<div class="page-heading"><div><p class="eyebrow">MAKE IT YOURS</p><h1>A cinema on your terms.</h1><p>A few thoughtful preferences for a better movie night.</p></div></div><div class="profile-shortcuts"><button class="button subtle" data-action="navigate" data-route="history">${icon("history")} Recently watched</button><button class="button subtle" data-action="navigate" data-route="watched">${icon("check")} Completed</button></div><div class="settings-grid"><div class="settings-stack"><section class="settings-card"><h2>${icon("settings")} Your experience</h2><p>These preferences stay with this browser and travel with your library backup.</p><label class="setting-row"><span><strong>What should we call you?</strong><small>Your own little corner of cinema.</small></span><input class="name-input" data-setting="name" value="${esc(s.name)}" maxlength="30" aria-label="Your name"></label>${toggle("compact", "Compact browsing", "Fit more stories on your screen.")}${toggle("hideWatched", "Hide completed titles", "Keep discovery fresh. Your library stays intact.")}${toggle("reducedMotion", "Reduce motion", "A calmer interface with fewer animations.")}</section><section class="settings-card"><h2>${icon("play")} Playback preferences</h2><label class="setting-row"><span><strong>Preferred server</strong><small>Start embedded playback with this provider.</small></span><select data-setting="defaultServer" aria-label="Preferred server">${PROVIDERS.map((p) => `<option value="${p.id}" ${s.defaultServer === p.id ? "selected" : ""}>${p.name}</option>`).join("")}</select></label>${toggle("rememberEpisode", "Remember selected episodes", "Reopen a series at the last episode you chose.")}${toggle("playerSandbox", "Restrict embedded players", "Off by default for playback compatibility. Turn on to limit provider popups and navigation.")}<p class="settings-note">Embedded providers supply their own quality, audio, subtitle and timeline controls. Availability depends on the provider. CineLocal does not host video.</p></section></div><div class="settings-stack"><section class="settings-card"><h2>${icon("bookmark")} Your library, your data</h2><div class="stat-row"><div class="stat"><b>${state.watchlist.length}</b><span>Saved for later</span></div><div class="stat"><b>${state.watched.length}</b><span>Completed</span></div><div class="stat"><b>${state.history.length}</b><span>Recent titles</span></div></div><div class="settings-buttons"><button class="button primary" data-action="export">${icon("download")} Export backup</button><button class="button subtle" data-action="import">${icon("upload")} Import backup</button></div><p class="settings-note">Backups include your lists, ratings and preferences. Importing replaces the current library after confirmation. There is no cloud sync or account system.</p></section><section class="settings-card"><h2>${icon("history")} A fresh start</h2><p>Clear recent titles while keeping your watchlist, completed titles and preferences.</p><button class="button danger" data-action="clear-history">${icon("trash")} Clear viewing history</button></section><section class="settings-card"><h2>${icon("info")} CineLocal 2.0</h2><p>Built for your own front row seat. Catalog metadata and artwork are provided by TMDB.</p><div class="settings-buttons"><button class="button subtle" data-action="connection">Check catalog connection</button><button class="button subtle" data-action="shortcuts">Keyboard shortcuts</button></div><p class="settings-note">Your collection lives in this browser. Keep a backup before clearing browser data or moving to a new device.</p></section></div></div>`;
 }
+function directLinkForm() {
+  return `<form class="direct-link-form" data-video-link><h3>${icon("play")} Play a video link</h3><p>Use a direct HTTPS MP4 or WebM link from a source you trust. CineLocal plays the video itself, without an embedded website or its redirect scripts. A streaming website address won’t work here.</p><label>Video URL<input name="video-url" type="url" required placeholder="https://example.com/movie.mp4" aria-label="Direct video URL" autocomplete="off" spellcheck="false"></label><button class="button primary" type="submit">${icon("play")} Play video link</button><small>The URL is used only for this session and is not saved or included in backups.</small></form>`;
+}
 function renderLocal() {
-  main.innerHTML = `<div class="page-heading"><div><p class="eyebrow">YOUR FILES. YOUR SCREEN.</p><h1>Bring your own movie night.</h1><p>A private player for the videos already on your device.</p></div></div><section class="local-drop" id="local-drop">${icon("folder")}<h2>Drop a film. Settle in.</h2><p>Open a video from your device. It plays right here, without being uploaded anywhere.</p><button class="button primary" data-action="choose-video">${icon("plus")} Choose a video</button><p style="font-size:10px;margin-bottom:0">MP4, WebM and other formats supported by your browser</p></section><div class="local-features"><article class="local-feature">${icon("play")}<h3>Every little control</h3><p>Play, pause, seek, adjust volume and speed, enter fullscreen or picture-in-picture.</p></article><article class="local-feature">${icon("film")}<h3>Read between the lines</h3><p>Load a matching SRT or WebVTT subtitle file. Choose a file from your own device.</p></article><article class="local-feature">${icon("history")}<h3>A little memory</h3><p>Reopen the same file to resume your last position. Your video stays on your device.</p></article></div>`;
+  main.innerHTML = `<div class="page-heading"><div><p class="eyebrow">YOUR FILES. YOUR SCREEN.</p><h1>Bring your own movie night.</h1><p>A private player for the videos already on your device.</p></div></div><section class="local-drop" id="local-drop">${icon("folder")}<h2>Drop a film. Settle in.</h2><p>Open a video from your device. It plays right here, without being uploaded anywhere.</p><button class="button primary" data-action="choose-video">${icon("plus")} Choose a video</button><p style="font-size:10px;margin-bottom:0">MP4, WebM and other formats supported by your browser</p></section>${directLinkForm()}<div class="local-features"><article class="local-feature">${icon("play")}<h3>Every little control</h3><p>Play, pause, seek, adjust volume and speed, enter fullscreen or picture-in-picture.</p></article><article class="local-feature">${icon("film")}<h3>Read between the lines</h3><p>Load a matching SRT or WebVTT subtitle file. Choose a file from your own device.</p></article><article class="local-feature">${icon("history")}<h3>A little memory</h3><p>Reopen the same file to resume your last position. Your video stays on your device.</p></article></div>`;
 }
 
 async function openDetails(key, autoplay = false) {
@@ -763,7 +787,7 @@ function renderStream(
           )
           .join("")}</select></label>`
       : `<button class="button subtle" data-action="hindi-server">Try Hindi audio</button>`
-  }</section><div class="player-options-footer"><button class="button subtle" data-action="toggle-sandbox" aria-pressed="${currentSettings().playerSandbox}">${icon("settings")} Restrictions ${currentSettings().playerSandbox ? "on" : "off"}</button><p>Audio and subtitle menus are inside the video. Use Fullscreen or Open server if those menus are cramped.</p></div></details><p class="watch-note">Quality, audio tracks and subtitles are controlled by the provider. Hindi subtitles do not necessarily mean Hindi audio. Switching servers restarts playback; your selected episode stays saved.</p>`;
+  }</section><div class="player-options-footer"><button class="button subtle" data-action="toggle-sandbox" aria-pressed="${currentSettings().playerSandbox}">${icon("settings")} Restrictions ${currentSettings().playerSandbox ? "on" : "off"}</button><p>Audio and subtitle menus are inside the video. Use Fullscreen or Open server if those menus are cramped.</p></div>${directLinkForm()}</details><p class="watch-note">Quality, audio tracks and subtitles are controlled by the provider. Hindi subtitles do not necessarily mean Hindi audio. Switching servers restarts playback; your selected episode stays saved.</p>`;
   if (optionsOpen) $(".player-options").open = true;
   watchDialog.scrollTop = keepControls ? controlsScroll : 0;
   const frame = $(".watch-stage iframe");
@@ -908,12 +932,27 @@ async function openLocal(file) {
   localResumeKey = `${file.name}:${file.size}:${file.lastModified}`;
   localURL = URL.createObjectURL(file);
   playerMode = "local";
-  watchDialog.innerHTML = `<div class="watch-header"><div class="watch-heading"><h2>${esc(file.name)}</h2><p>LOCAL PLAYER · Only on your device</p></div><div class="watch-controls"><button class="icon-button" data-action="pip" aria-label="Picture in picture">${icon("pip")}</button><button class="icon-button" data-action="fullscreen" aria-label="Fullscreen player">${icon("expand")}</button><button class="icon-button" data-action="close-watch" aria-label="Close player">${icon("close")}</button></div></div><div class="watch-stage"><video id="local-video" controls playsinline preload="metadata" src="${localURL}"></video></div><div class="watch-toolbar"><button class="button subtle" data-action="seek-back">−10 seconds</button><button class="button subtle" data-action="seek-forward">+10 seconds</button><label>Speed <select id="playback-speed" aria-label="Playback speed">${[0.5, 0.75, 1, 1.25, 1.5, 1.75, 2].map((n) => `<option value="${n}" ${n === 1 ? "selected" : ""}>${n}×</option>`).join("")}</select></label><button class="button subtle" data-action="subtitles">${icon("upload")} Subtitles</button><button class="button subtle hidden" data-action="toggle-captions">Captions on</button><span class="spacer"></span><label>Sleep <select id="sleep-timer" aria-label="Sleep timer"><option value="0">Off</option><option value="15">15 min</option><option value="30">30 min</option><option value="60">60 min</option><option value="90">90 min</option></select></label></div><p class="watch-note" id="local-note">Space: play/pause · ← →: seek · M: mute · F: fullscreen. Your video is never uploaded.</p>`;
+  renderNativePlayer(localURL, file.name, "LOCAL PLAYER · Only on your device");
+}
+async function openDirectVideo(value) {
+  const url = directVideoUrl(value);
+  const label =
+    watchDialog.open && playerMode === "stream" && playerMedia
+      ? title(playerMedia)
+      : "Your video link";
+  if (watchDialog.open) await closeWatch();
+  localResumeKey = "";
+  playerMode = "direct";
+  renderNativePlayer(url, label, "DIRECT VIDEO · CineLocal player");
+}
+function renderNativePlayer(source, name, caption) {
+  watchDialog.innerHTML = `<div class="watch-header"><div class="watch-heading"><h2>${esc(name)}</h2><p>${esc(caption)}</p></div><div class="watch-controls"><button class="icon-button" data-action="pip" aria-label="Picture in picture">${icon("pip")}</button><button class="icon-button" data-action="fullscreen" aria-label="Fullscreen player">${icon("expand")}</button><button class="icon-button" data-action="close-watch" aria-label="Close player">${icon("close")}</button></div></div><div class="watch-stage"><video id="local-video" controls playsinline preload="metadata" src="${esc(source)}"></video></div><div class="watch-toolbar"><button class="button subtle" data-action="seek-back">−10 seconds</button><button class="button subtle" data-action="seek-forward">+10 seconds</button><label>Speed <select id="playback-speed" aria-label="Playback speed">${[0.5, 0.75, 1, 1.25, 1.5, 1.75, 2].map((n) => `<option value="${n}" ${n === 1 ? "selected" : ""}>${n}×</option>`).join("")}</select></label><button class="button subtle" data-action="subtitles">${icon("upload")} Subtitles</button><button class="button subtle hidden" data-action="toggle-captions">Captions on</button><span class="spacer"></span><label>Sleep <select id="sleep-timer" aria-label="Sleep timer"><option value="0">Off</option><option value="15">15 min</option><option value="30">30 min</option><option value="60">60 min</option><option value="90">90 min</option></select></label></div><p class="watch-note" id="local-note">Space: play/pause · ← →: seek · M: mute · F: fullscreen. ${playerMode === "direct" ? "Video loads directly from your chosen source. No embedded provider scripts are loaded." : "Your video is never uploaded."}</p>`;
   watchDialog.showModal();
   const video = $("#local-video");
   video.volume = currentSettings().volume;
   let lastSave = 0;
   video.addEventListener("loadedmetadata", () => {
+    if (!video.isConnected || !watchDialog.open) return;
     const last = localPositions()[localResumeKey]?.time;
     if (last > 0 && last < video.duration - 10) {
       video.currentTime = last;
@@ -935,9 +974,18 @@ async function openLocal(file) {
     } catch {}
   });
   video.addEventListener("error", () => {
-    $("#local-note").textContent =
-      "This video format or codec is not supported by your browser. Try an MP4 with H.264 video and AAC audio.";
-    toast("This browser could not decode the video.", "error");
+    const note = $("#local-note");
+    if (!video.isConnected || !note) return;
+    note.textContent =
+      playerMode === "direct"
+        ? "This link could not play. Use a direct HTTPS MP4/WebM file, not a website page. The source must allow playback in your browser; expired links and unsupported codecs will fail."
+        : "This video format or codec is not supported by your browser. Try an MP4 with H.264 video and AAC audio.";
+    toast(
+      playerMode === "direct"
+        ? "This video link could not play."
+        : "This browser could not decode the video.",
+      "error",
+    );
   });
   if (!document.pictureInPictureEnabled)
     $('[data-action="pip"]').disabled = true;
@@ -1313,6 +1361,11 @@ document.addEventListener("input", (e) => {
   }, 350);
 });
 document.addEventListener("submit", (e) => {
+  if (!e.target.matches("[data-video-link]")) return;
+  e.preventDefault();
+  guard(openDirectVideo)(e.target.elements["video-url"].value);
+});
+document.addEventListener("submit", (e) => {
   if (e.target.id === "search-form") {
     e.preventDefault();
     clearTimeout(searchTimer);
@@ -1343,7 +1396,7 @@ document.addEventListener(
       e.preventDefault();
       actions.shortcuts();
     }
-    if (watchDialog.open && playerMode === "local") {
+    if (watchDialog.open && ["local", "direct"].includes(playerMode)) {
       const v = $("#local-video");
       if (!v) return;
       // Native video controls handle their own keyboard events.
